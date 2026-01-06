@@ -4,6 +4,7 @@
 REPORT_DIR="dependency-reports"
 INPUT_FILE="unique_deps.tmp"
 TRANSITIVE=false
+TARGET_POM="pom-old.xml"
 
 # 1. Handle Flags
 while getopts "t" opt; do
@@ -39,7 +40,7 @@ else
 fi
 
 echo "Step 1: Extracting unique dependencies..."
-mvn dependency:list $EXTRACT_FLAG 2>&1 | \
+mvn dependency:list $EXTRACT_FLAG -f "$TARGET_POM" 2>&1 | \
     sed -nE 's/.* ([^:]+:[^:]+):[a-z]+:[^: ]+.*/\1/p' | \
     grep -v "dependencies.dependency" | \
     sort -u > "$INPUT_FILE"
@@ -65,6 +66,7 @@ while read -r dep || [ -n "$dep" ]; do
     # We use tree with the specific include
     # Even if we only listed declared deps, the tree shows the hierarchy
     mvn dependency:tree -Dincludes="$dep" \
+        -f "$TARGET_POM" \
         -DoutputFile="$report_path" \
         -DappendOutput=true \
         -q
